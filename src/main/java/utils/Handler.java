@@ -40,7 +40,7 @@ public class Handler {
      * @param line
      */
     public void handle(String line) {
-        if (line.indexOf(" Client Nonce:") != -1) {
+        if (line.indexOf("Client Nonce:") != -1) {
             clientNonceState = 0;
             clientNonce = new StringBuilder();
         } else if (clientNonceState == 0) {
@@ -49,7 +49,7 @@ public class Handler {
         } else if (clientNonceState == 1) {
             addToClientNonce(line);
             clientNonceState = -1;
-        } else if (line.indexOf(" Master Secret:") != -1) {
+        } else if (line.startsWith("Master Secret:")) {
             masterSecretState = 0;
             masterSecret = new StringBuilder();
         } else if (masterSecretState >= 0 && masterSecretState <= 1) {
@@ -78,7 +78,7 @@ public class Handler {
     private String getHexFromLine(String line) {
         StringBuilder hexBuilder = new StringBuilder();
 
-        final String regex = "([0-9a-f]{2} ){8} ";
+        final String regex = "([0-9a-fA-F]{2} ){8} ";
         final Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(line);
         while (matcher.find()) {
@@ -94,7 +94,7 @@ public class Handler {
     private void openFile(String outputFilePath) {
         if (writer == null) {
             try {
-                writer = new PrintWriter("C:\\tmp\\websphereSSLKeys.log", "UTF-8");
+                writer = new PrintWriter(outputFilePath, "UTF-8");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {

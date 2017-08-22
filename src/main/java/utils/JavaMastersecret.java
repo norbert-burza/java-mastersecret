@@ -19,6 +19,9 @@ public class JavaMastersecret {
     @Option(name = "-output", required = true, usage = "file to store keys (for Wireshark)")
     private String outputFile;
 
+    @Option(name = "-f", usage = "follow input")
+    private Boolean follow = Boolean.TRUE;
+
     public static void main(String[] args) {
         new JavaMastersecret().doMain(args);
     }
