@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>utils</groupId>
-  <artifactId>websphere-mastersecret</artifactId>
+  <artifactId>java-mastersecret</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>websphere-mastersecret</name>
+  <name>java-mastersecret</name>
   <url>http://maven.apache.org</url>
 
   <properties>

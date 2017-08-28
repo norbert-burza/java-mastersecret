@@ -26,6 +26,11 @@ public class Handler {
     // Used to store extracted client nonces and corresponding master secrets
     private PrintWriter writer;
 
+    // A regular expression for finding the first line of Master Secret log
+    final String regex = "(?<!Pre)Master Secret:";
+
+    final Pattern pattern = Pattern.compile(regex);
+
     /**
      * Creates an instance of Handler for analyzing Websphere SystemOut.log.
      *
@@ -40,6 +45,8 @@ public class Handler {
      * @param line
      */
     public void handle(String line) {
+        Matcher masterSecretMatcher = pattern.matcher(line);
+
         if (line.indexOf("Client Nonce:") != -1) {
             clientNonceState = 0;
             clientNonce = new StringBuilder();
@@ -49,7 +56,7 @@ public class Handler {
         } else if (clientNonceState == 1) {
             addToClientNonce(line);
             clientNonceState = -1;
-        } else if (line.startsWith("Master Secret:")) {
+        } else if (masterSecretMatcher.matches()) {
             masterSecretState = 0;
             masterSecret = new StringBuilder();
         } else if (masterSecretState >= 0 && masterSecretState <= 1) {
@@ -64,17 +71,33 @@ public class Handler {
         }
     }
 
+    /**
+     * Client nonce is spread across multiple lines in the logs.
+     *
+     * @param line a log line with a part of client nonce
+     */
     private void addToClientNonce(String line) {
         String hex = getHexFromLine(line);
         clientNonce.append(hex);
     }
 
+    /**
+     * Master secret is spread across multiple lines in the logs.
+     *
+     * @param line a log line with a part of master secret
+     */
     private void addToMasterSecret(String line) {
         String hex = getHexFromLine(line);
         masterSecret.append(hex);
     }
 
 
+    /**
+     * Extracts HEX encoded bytes from a single log line, that may also include timestamp, whitespaces etc.
+     *
+     * @param line single log line
+     * @return HEX encoded byte array
+     */
     private String getHexFromLine(String line) {
         StringBuilder hexBuilder = new StringBuilder();
 
@@ -91,6 +114,11 @@ public class Handler {
         return hexBuilder.toString();
     }
 
+    /**
+     * Opens a file for writing client nonces and the corresponding master secrets.
+     * This file can be loaded e.g. in Wireshark to decode the client server conversation.
+     * @param outputFilePath filepath to be used to write ssl/tls keys
+     */
     private void openFile(String outputFilePath) {
         if (writer == null) {
             try {
@@ -103,6 +131,10 @@ public class Handler {
         }
     }
 
+    /**
+     * Writes a single output line to a file and std output.
+     * @param line singe line with client nonce and master secret
+     */
     private void writeToFile(String line) {
             writer.println(line);
             writer.flush();
